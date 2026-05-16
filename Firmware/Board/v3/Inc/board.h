@@ -22,11 +22,7 @@
 
 #include <Drivers/STM32/stm32_system.h>
 
-#if HW_VERSION_MINOR <= 3
-#define SHUNT_RESISTANCE (675e-6f)
-#else
-#define SHUNT_RESISTANCE (500e-6f)
-#endif
+#define SHUNT_RESISTANCE (1e-3f)
 
 #define AXIS_COUNT (2)
 
@@ -120,7 +116,7 @@ static const int current_meas_hz = CURRENT_MEAS_HZ;
 #if HW_VERSION_VOLTAGE >= 48
 #define VBUS_S_DIVIDER_RATIO 19.0f
 #elif HW_VERSION_VOLTAGE == 24
-#define VBUS_S_DIVIDER_RATIO 11.0f
+#define VBUS_S_DIVIDER_RATIO 22.276f
 #else
 #error "unknown board voltage"
 #endif

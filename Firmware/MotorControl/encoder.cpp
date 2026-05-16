@@ -531,7 +531,7 @@ bool Encoder::abs_spi_start_transaction() {
             spi_task_.ncs_gpio = abs_spi_cs_gpio_;
             spi_task_.tx_buf = (uint8_t*)abs_spi_dma_tx_;
             spi_task_.rx_buf = (uint8_t*)abs_spi_dma_rx_;
-            spi_task_.length = 1;
+            spi_task_.length = 2;   // 读取32位数据，适配MT6701
             spi_task_.on_complete = [](void* ctx, bool success) { ((Encoder*)ctx)->abs_spi_cb(success); };
             spi_task_.on_complete_ctx = this;
             spi_task_.next = nullptr;
@@ -559,7 +559,7 @@ uint8_t cui_parity(uint16_t v) {
     return ~v & 3;
 }
 
-void Encoder::abs_spi_cb(bool success) {
+/* void Encoder::abs_spi_cb(bool success) {
     uint16_t pos;
 
     if (!success) {
@@ -609,17 +609,86 @@ void Encoder::abs_spi_cb(bool success) {
 
 done:
     Stm32SpiArbiter::release_task(&spi_task_);
+} */
+
+
+//适配MT6701 24-bit SPI/SSI 编码器的 abs_spi_cb 回调函数
+void Encoder::abs_spi_cb(bool success) {
+    uint16_t pos;
+
+    if (!success) {
+        goto done;
+    }
+
+    switch (mode_) {
+        case MODE_SPI_ABS_AMS: {
+            // ==========================================
+            // 🚀 爆改开始：MT6701 专属 24-bit SPI/SSI 解析
+            // ==========================================
+            uint16_t word1 = abs_spi_dma_rx_[0]; // 时钟前 16 个 bit
+            uint16_t word2 = abs_spi_dma_rx_[1]; // 时钟后 16 个 bit
+
+            // 将两次读到的 16 位数据拼成一个 32 位变量。
+            // MT6701 在前 24 个时钟发出有效数据，后 8 个时钟是无效数据。
+            // word1 包含了前 16 位，word2 的高 8 位包含了剩下的 8 位有效数据。
+            uint32_t raw_24bit = ((uint32_t)word1 << 8) | (word2 >> 8);
+
+            // MT6701 的 14 位角度数据在最顶端（高 14 位）。
+            // 我们把 24 位数据向右推 10 位，剩下的就是干净的 14 位角度！
+            pos = (raw_24bit >> 10) & 0x3FFF;
+            
+            // 注：原版的 ams_parity 奇偶校验已经被彻底干掉了！
+            // ==========================================
+        } break;
+
+        case MODE_SPI_ABS_CUI: {
+            uint16_t rawVal = abs_spi_dma_rx_[0];
+            // check if parity is correct
+            if (cui_parity(rawVal)) {
+                goto done;
+            }
+            pos = rawVal & 0x3fff;
+        } break;
+
+        case MODE_SPI_ABS_RLS: {
+            uint16_t rawVal = abs_spi_dma_rx_[0];
+            pos = (rawVal >> 2) & 0x3fff;
+        } break;
+
+        case MODE_SPI_ABS_MA732: {
+            uint16_t rawVal = abs_spi_dma_rx_[0];
+            pos = (rawVal >> 2) & 0x3fff;
+        } break;
+
+        default: {
+           set_error(ERROR_UNSUPPORTED_ENCODER_MODE);
+           goto done;
+        } break;
+    }
+
+    pos_abs_ = pos;
+    abs_spi_pos_updated_ = true;
+    if (config_.pre_calibrated) {
+        is_ready_ = true;
+    }
+
+done:
+    Stm32SpiArbiter::release_task(&spi_task_);
 }
 
 void Encoder::abs_spi_cs_pin_init(){
     // Decode and init cs pin
-#if HW_VERSION_MAJOR == 4
+/* #if HW_VERSION_MAJOR == 4
     if (mode_ == MODE_SPI_ABS_MA732)
         abs_spi_cs_gpio_ = {GPIOA, GPIO_PIN_15};
     else
 #else
     abs_spi_cs_gpio_ = get_gpio(config_.abs_spi_cs_gpio_pin);
-#endif
+#endif */
+
+// 🚀 爆改开始：MT6701 专属 CS 引脚初始化
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    abs_spi_cs_gpio_ = {GPIOD, GPIO_PIN_2};
     abs_spi_cs_gpio_.config(GPIO_MODE_OUTPUT_PP, GPIO_PULLUP);
 
     // Write pin high

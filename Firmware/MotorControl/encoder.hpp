@@ -141,8 +141,12 @@ public:
     Stm32Gpio abs_spi_cs_gpio_;
     uint32_t abs_spi_cr1;
     uint32_t abs_spi_cr2;
-    uint16_t abs_spi_dma_tx_[1] = {0xFFFF};
-    uint16_t abs_spi_dma_rx_[1];
+    /* uint16_t abs_spi_dma_tx_[1] = {0xFFFF};
+    uint16_t abs_spi_dma_rx_[1]; */
+
+    // For MT6701, 32 bits data is read, so we need 2 uint16_t to store the data.
+    uint16_t abs_spi_dma_tx_[2] = {0xFFFF, 0xFFFF};
+    uint16_t abs_spi_dma_rx_[2];
     Stm32SpiArbiter::SpiTask spi_task_;
 
     constexpr float getCoggingRatio(){

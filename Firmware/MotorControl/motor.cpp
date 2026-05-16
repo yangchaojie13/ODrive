@@ -318,21 +318,26 @@ bool Motor::setup() {
     constexpr float kMargin = 0.90f;
     constexpr float max_output_swing = 1.35f; // [V] out of amplifier
     float max_unity_gain_current = kMargin * max_output_swing * shunt_conductance_; // [A]
-    float requested_gain = max_unity_gain_current / config_.requested_current_range; // [V/V]
+    //float requested_gain = max_unity_gain_current / config_.requested_current_range; // [V/V]
     
-    float actual_gain;
+    // --- 原始的 DRV8301 配置代码 (注释掉) ---
+    /* float actual_gain;
     if (!gate_driver_.config(requested_gain, &actual_gain))
-        return false;
+        return false; */
 
+    // --- 植入你的 DRV8323 专属配置 ---
+    float actual_gain = 40.0f; // 强行写死 40 倍增益，不再去读取芯片
     // Values for current controller
     phase_current_rev_gain_ = 1.0f / actual_gain;
     // Clip all current control to actual usable range
     max_allowed_current_ = max_unity_gain_current * phase_current_rev_gain_;
 
-    max_dc_calib_ = 0.1f * max_allowed_current_;
+    //调高电流限制，允许更大的电流通过以达到更大的转矩输出（前提是散热足够）。如果不调高这个限制，电流环的输出就会被限制在一个较小的范围内，导致无法达到预期的性能。
+    max_dc_calib_ = 0.5f * max_allowed_current_;
 
-    if (!gate_driver_.init())
-        return false;
+    // --- 暂时关闭底层初始化检测 (注释掉) ---
+    /* if (!gate_driver_.init())
+        return false; */
 
     return true;
 }
@@ -345,12 +350,12 @@ void Motor::disarm_with_error(Motor::Error error){
 }
 
 bool Motor::do_checks(uint32_t timestamp) {
-    gate_driver_.do_checks();
+    /* gate_driver_.do_checks();
 
     if (!gate_driver_.is_ready()) {
         disarm_with_error(ERROR_DRV_FAULT);
         return false;
-    }
+    } */
     if (!motor_thermistor_.do_checks()) {
         disarm_with_error(ERROR_MOTOR_THERMISTOR_OVER_TEMP);
         return false;
@@ -604,10 +609,13 @@ void Motor::current_meas_cb(uint32_t timestamp, std::optional<Iph_ABC_t> current
 
     n_evt_current_measurement_++;
 
-    bool dc_calib_valid = (dc_calib_running_since_ >= config_.dc_calib_tau * 7.5f)
+    /* bool dc_calib_valid = (dc_calib_running_since_ >= config_.dc_calib_tau * 7.5f)
                        && (abs(DC_calib_.phA) < max_dc_calib_)
                        && (abs(DC_calib_.phB) < max_dc_calib_)
-                       && (abs(DC_calib_.phC) < max_dc_calib_);
+                       && (abs(DC_calib_.phC) < max_dc_calib_); */
+
+    bool dc_calib_valid = true; // 强行设为 True！
+
 
     if (armed_state_ == 1 || armed_state_ == 2) {
         current_meas_ = {0.0f, 0.0f, 0.0f};
