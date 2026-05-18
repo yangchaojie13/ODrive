@@ -24,7 +24,7 @@
 
 #define SHUNT_RESISTANCE (1e-3f)
 
-#define AXIS_COUNT (2)
+#define AXIS_COUNT (1)
 
 // Total count of GPIOs, including encoder pins, CAN pins and a dummy GPIO0.
 // ODrive v3.4 and earlier don't have GPIOs 6, 7 and 8 but to keep the numbering

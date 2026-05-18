@@ -57,11 +57,6 @@ OnboardThermistorCurrentLimiter fet_thermistors[AXIS_COUNT] = {
         15,                              // adc_channel
         &fet_thermistor_poly_coeffs[0],  // coefficients
         fet_thermistor_num_coeffs        // num_coeffs
-    },
-    {   // <--- 给 Axis1 加的替身
-        15,                              
-        &fet_thermistor_poly_coeffs[0],  
-        fet_thermistor_num_coeffs        
     }
     /* {
 #if HW_VERSION_MAJOR == 3 && HW_VERSION_MINOR >= 3
@@ -83,14 +78,6 @@ Motor motors[AXIS_COUNT] = {
      m0_gate_driver,           // gate_driver
      m0_gate_driver,           // opamp
      fet_thermistors[0],
-     motor_thermistors[0]},
-     {   // <--- 给 Axis1 加的替身
-     &htim1,                   
-     0b110,                    
-     1.0f / SHUNT_RESISTANCE,  
-     m0_gate_driver,           
-     m0_gate_driver,           
-     fet_thermistors[0],
      motor_thermistors[0]}
     /* {&htim8,                   // timer
      0b110,                    // current_sensor_mask
@@ -109,14 +96,6 @@ Encoder encoders[AXIS_COUNT] = {
         {M0_ENC_B_GPIO_Port, M0_ENC_B_Pin},  // hallB_gpio
         {M0_ENC_Z_GPIO_Port, M0_ENC_Z_Pin},  // hallC_gpio
         &spi3_arbiter                        // spi_arbiter
-    },
-    {   // <--- 给 Axis1 加的替身
-        &htim3,                              
-        {M0_ENC_Z_GPIO_Port, M0_ENC_Z_Pin},  
-        {M0_ENC_A_GPIO_Port, M0_ENC_A_Pin},  
-        {M0_ENC_B_GPIO_Port, M0_ENC_B_Pin},  
-        {M0_ENC_Z_GPIO_Port, M0_ENC_Z_Pin},  
-        &spi3_arbiter                        
     }
     /* {
         &htim4,                              // timer
@@ -150,20 +129,6 @@ std::array<Axis, AXIS_COUNT> axes{{
         endstops[0],
         endstops[1],           // min_endstop, max_endstop
         mechanical_brakes[0],  // mechanical brake
-    },
-    {
-        1,                                             // axis_num
-        0,                                             // step_gpio_pin
-        0,                                             // dir_gpio_pin
-        (osPriority)(osPriorityHigh + (osPriority)1),  // thread_priority
-        encoders[0],                                   // encoder
-        sensorless_estimators[0],                      // sensorless_estimator
-        controllers[0],                                // controller
-        motors[0],                                     // motor
-        trap[0],                                       // trap
-        endstops[0],
-        endstops[1],           // min_endstop, max_endstop
-        mechanical_brakes[1],  // mechanical brake
     },
     /* {
         1,  // axis_num

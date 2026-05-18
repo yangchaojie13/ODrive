@@ -74,16 +74,16 @@
 #define TIM_APB1_DEADTIME_CLOCKS 40
 #define TIM_1_8_RCR 2
 
-#define M0_nCS_Pin GPIO_PIN_13
-#define M0_nCS_GPIO_Port GPIOC
+#define M0_nCS_Pin GPIO_PIN_4
+#define M0_nCS_GPIO_Port GPIOA
 #define M1_nCS_Pin GPIO_PIN_14
 #define M1_nCS_GPIO_Port GPIOC
 #define M1_ENC_Z_Pin GPIO_PIN_15
 #define M1_ENC_Z_GPIO_Port GPIOC
-#define M0_IB_Pin GPIO_PIN_0
-#define M0_IB_GPIO_Port GPIOC
-#define M0_IC_Pin GPIO_PIN_1
-#define M0_IC_GPIO_Port GPIOC
+#define M0_IB_Pin GPIO_PIN_1
+#define M0_IB_GPIO_Port GPIOA
+#define M0_IC_Pin GPIO_PIN_2
+#define M0_IC_GPIO_Port GPIOA
 #define M1_IC_Pin GPIO_PIN_2
 #define M1_IC_GPIO_Port GPIOC
 #define M1_IB_Pin GPIO_PIN_3
@@ -100,7 +100,7 @@
 #define M1_TEMP_GPIO_Port GPIOA
 #define AUX_TEMP_Pin GPIO_PIN_5
 #define AUX_TEMP_GPIO_Port GPIOA
-#define VBUS_S_Pin GPIO_PIN_6
+#define VBUS_S_Pin GPIO_PIN_3
 #define VBUS_S_GPIO_Port GPIOA
 #define M1_AL_Pin GPIO_PIN_7
 #define M1_AL_GPIO_Port GPIOA
@@ -118,7 +118,7 @@
 #define AUX_L_GPIO_Port GPIOB
 #define AUX_H_Pin GPIO_PIN_11
 #define AUX_H_GPIO_Port GPIOB
-#define EN_GATE_Pin GPIO_PIN_12
+#define EN_GATE_Pin GPIO_PIN_0
 #define EN_GATE_GPIO_Port GPIOB
 #define M0_AL_Pin GPIO_PIN_13
 #define M0_AL_GPIO_Port GPIOB
@@ -142,8 +142,8 @@
 #define M0_CH_GPIO_Port GPIOA
 #define GPIO_7_Pin GPIO_PIN_15
 #define GPIO_7_GPIO_Port GPIOA
-#define nFAULT_Pin GPIO_PIN_2
-#define nFAULT_GPIO_Port GPIOD
+#define nFAULT_Pin GPIO_PIN_1
+#define nFAULT_GPIO_Port GPIOB
 #define GPIO_8_Pin GPIO_PIN_3
 #define GPIO_8_GPIO_Port GPIOB
 #define M0_ENC_A_Pin GPIO_PIN_4
