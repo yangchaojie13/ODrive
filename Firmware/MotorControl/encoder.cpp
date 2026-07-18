@@ -612,6 +612,20 @@ done:
 } */
 
 
+// 🚀 新增：MT6701 专属的 CRC-6 计算 (多项式 X^6 + X + 1)
+static uint8_t mt6701_crc6(uint32_t data_18bit) {
+    uint8_t crc = 0x00;
+    for (int i = 17; i >= 0; i--) {
+        uint8_t bit = (data_18bit >> i) & 0x01;
+        uint8_t msb = (crc >> 5) & 0x01;
+        crc <<= 1;
+        if (bit ^ msb) {
+            crc ^= 0x43;
+        }
+    }
+    return crc & 0x3F;
+}
+
 //适配MT6701 24-bit SPI/SSI 编码器的 abs_spi_cb 回调函数
 void Encoder::abs_spi_cb(bool success) {
     uint16_t pos;
@@ -633,11 +647,21 @@ void Encoder::abs_spi_cb(bool success) {
             // word1 包含了前 16 位，word2 的高 8 位包含了剩下的 8 位有效数据。
             uint32_t raw_24bit = ((uint32_t)word1 << 8) | (word2 >> 8);
 
+            // 提取高 18 位数据（14位角度 + 4位状态）用于计算 CRC
+            uint32_t data_18bit = (raw_24bit >> 6) & 0x3FFFF;
+            // 提取低 6 位作为接收到的 CRC
+            uint8_t received_crc = raw_24bit & 0x3F;
+
+            // 如果 CRC 校验不通过，直接丢弃这帧数据，返回上一层的预测值
+            if (mt6701_crc6(data_18bit) != received_crc) {
+                goto done; 
+            }
+
             // MT6701 的 14 位角度数据在最顶端（高 14 位）。
             // 我们把 24 位数据向右推 10 位，剩下的就是干净的 14 位角度！
             pos = (raw_24bit >> 10) & 0x3FFF;
             
-            // 注：原版的 ams_parity 奇偶校验已经被彻底干掉了！
+            // 注：原版的 ams_parity 奇偶校验已经被替换为更严谨的 MT6701 CRC-6 校验！
             // ==========================================
         } break;
 
